@@ -1,0 +1,22 @@
+{
+  "name": "kevinbradwick/couchy",
+  "description": "A lightweight CouchDB PHP client",
+  "type": "library",
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "Kevin Bradwick",
+      "email": "kevinbradwick@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Couchy\\": "src/"
+    }
+  },
+  "version": "0.1.0",
+  "require": {},
+  "require-dev": {
+    "phpunit/phpunit": "4.6.6"
+  }
+}
