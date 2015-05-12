@@ -9,13 +9,16 @@
       "email": "kevinbradwick@gmail.com"
     }
   ],
+  "keywords": ["couchdb", "odm"],
   "autoload": {
     "psr-4": {
       "Couchy\\": "src/"
     }
   },
   "version": "0.1.0",
-  "require": {},
+  "require": {
+    "php": ">=5.4"
+  },
   "require-dev": {
     "phpunit/phpunit": "4.6.6"
   }
