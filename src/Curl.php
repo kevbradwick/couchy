@@ -42,7 +42,18 @@ class Curl
      */
     public function put($url, array $params = [])
     {
-        return $this->doRequest(self::HTTP_PUT, $url);
+        return $this->doRequest(self::HTTP_PUT, $url, null, $params);
+    }
+
+    /**
+     * @param string $url
+     * @param array $params
+     * @param null $body
+     * @return mixed
+     */
+    public function post($url, array $params = [], $body = null)
+    {
+        return $this->doRequest(self::HTTP_POST, $url, $body, $params);
     }
 
     /**
@@ -59,7 +70,7 @@ class Curl
      *
      * @param string $method
      * @param string $url
-     * @param string $body
+     * @param array $data
      * @param array $params
      * @param array $headers
      * @return mixed
@@ -67,7 +78,7 @@ class Curl
     private function doRequest(
         $method,
         $url,
-        $body = null,
+        array $data = [],
         array $params = [],
         array $headers = []
     ) {
@@ -89,6 +100,10 @@ class Curl
         curl_setopt($ch, \CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, \CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, \CURLOPT_HTTPHEADER, $headers);
+
+        if (!empty($data)) {
+            curl_setopt($ch, \CURLOPT_POSTFIELDS, json_encode($data));
+        }
 
         $output = $this->exec($ch);
 
