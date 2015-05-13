@@ -2,7 +2,6 @@
 
 namespace Couchy;
 
-
 class Server
 {
     /**

@@ -2,7 +2,6 @@
 
 namespace Couchy;
 
-
 class Curl
 {
     const HTTP_GET = 'GET';
@@ -65,9 +64,13 @@ class Curl
      * @param array $headers
      * @return mixed
      */
-    private function doRequest($method, $url, $body = null, array $params = [],
-                               array $headers = [])
-    {
+    private function doRequest(
+        $method,
+        $url,
+        $body = null,
+        array $params = [],
+        array $headers = []
+    ) {
         $this->reset();
 
         if (count($params) > 0) {
