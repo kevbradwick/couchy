@@ -47,6 +47,15 @@ class Curl
     }
 
     /**
+     * @param string $url
+     * @return resource
+     */
+    private function init($url)
+    {
+        return curl_init($url);
+    }
+
+    /**
      * Make a HTTP request.
      *
      * @param string $method
@@ -65,7 +74,7 @@ class Curl
             $url .= '?' . http_build_query($params);
         }
 
-        $ch = curl_init($url);
+        $ch = $this->init($url);
 
         $headers = array_replace_recursive([
             'Content-Type: application/json',
