@@ -33,4 +33,22 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $db = new Database('test', $this->client);
         $db->create();
     }
+
+    public function testExistsRetrnsFalse()
+    {
+        $client = $this->getMock('Couchy\Client', ['listDatabases']);
+        $client->expects($this->once())->method('listDatabases')->willReturn([]);
+
+        $database = new Database('test', $client);
+        $this->assertFalse($database->exists());
+    }
+
+    public function testExistsRetrnsTrue()
+    {
+        $client = $this->getMock('Couchy\Client', ['listDatabases']);
+        $client->expects($this->once())->method('listDatabases')->willReturn(['test']);
+
+        $database = new Database('test', $client);
+        $this->assertTrue($database->exists());
+    }
 }
