@@ -2,157 +2,71 @@
 
 namespace Couchy;
 
+use Couchy\Curl\Request;
+use Couchy\Curl\Response;
+
 class Curl
 {
-    const HTTP_GET = 'GET';
-    const HTTP_POST = 'POST';
-    const HTTP_PUT = 'PUT';
-    const HTTP_DELETE = 'DELETE';
-
-    /**
-     * @var int
-     */
-    private $statusCode;
-
-    /**
-     * @var array
-     */
-    private $headers = [];
-
-    /**
-     * @var string
-     */
-    private $body = '';
+    const HTTP_GET = Curl\Request::HTTP_GET;
+    const HTTP_POST = Curl\Request::HTTP_POST;
+    const HTTP_PUT = Curl\Request::HTTP_PUT;
+    const HTTP_DELETE = Curl\Request::HTTP_DELETE;
 
     /**
      * @param string $url
-     * @param array $params
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
-    public function get($url, array $params = [], array $headers = [])
+    public function get($url, array $headers = [])
     {
-        return $this->doRequest(self::HTTP_GET, $url, $params, $headers);
+        $request = new Request($url, self::HTTP_GET);
+        $request->mergeHeaders($headers);
+
+        return $request->send();
     }
 
     /**
      * @param string $url
-     * @param array $params
-     * @return mixed
-     */
-    public function put($url, array $params = [])
-    {
-        return $this->doRequest(self::HTTP_PUT, $url, null, $params);
-    }
-
-    /**
-     * @param string $url
-     * @param array $params
-     * @param null $body
-     * @return mixed
-     */
-    public function post($url, array $params = [], $body = null)
-    {
-        return $this->doRequest(self::HTTP_POST, $url, $body, $params);
-    }
-
-    /**
-     * @param string $url
-     * @return resource
-     */
-    private function init($url)
-    {
-        return curl_init($url);
-    }
-
-    /**
-     * Make a HTTP request.
+     * @param array|\CURLFile $body
+     * @param array $headers
      *
-     * @param string $method
+     * @return Response
+     */
+    public function put($url, $body = null, array $headers = [])
+    {
+        $request = new Request($url, self::HTTP_PUT, $body);
+        $request->mergeHeaders($headers);
+
+        return $request->send();
+    }
+
+    /**
      * @param string $url
-     * @param array $data
-     * @param array $params
+     * @param null $body
      * @param array $headers
-     * @return mixed
+     *
+     * @return Response
      */
-    private function doRequest(
-        $method,
-        $url,
-        array $data = [],
-        array $params = [],
-        array $headers = []
-    ) {
-        $this->reset();
+    public function post($url, $body = null, array $headers = [])
+    {
+        $request = new Request($url, self::HTTP_POST, $body);
+        $request->mergeHeaders($headers);
 
-        if (count($params) > 0) {
-            $url .= '?' . http_build_query($params);
-        }
-
-        $ch = $this->init($url);
-
-        $headers = array_replace_recursive([
-            'Content-Type: application/json',
-            'Accept: */*',
-            'Accept-Encoding: gzip, deflate, sdch',
-        ], $headers);
-
-        curl_setopt($ch, \CURLOPT_HEADER, true);
-        curl_setopt($ch, \CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, \CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, \CURLOPT_HTTPHEADER, $headers);
-
-        if (!empty($data)) {
-            curl_setopt($ch, \CURLOPT_POSTFIELDS, json_encode($data));
-        }
-
-        $output = $this->exec($ch);
-
-        preg_match('/HTTP\/\d\.\d\s(?P<code>\d{3})/', $output, $matches);
-
-        // this should never fail but if it does, it probably should do more
-        // than throw an exception
-        if (!isset($matches['code'])) {
-            throw new \RuntimeException('Unable to parse response');
-        }
-
-        $this->statusCode = (int) $matches['code'];
-
-        list($headers_, $body_) = preg_split('/\R\R/', $output, 2);
-
-        foreach (preg_split('/\R/', $headers_) as $h) {
-            preg_match('/^(?P<name>[a-z\-]+):\s+(?P<value>.*)$/i', $h, $matches);
-            if (isset($matches['name']) && isset($matches['value'])) {
-                $this->headers[$matches['name']] = $matches['value'];
-            }
-        }
-
-        $this->body = trim($body_);
-
-        if (strlen($this->body) > 0) {
-            return json_decode($this->body);
-        }
-
-        return '';
+        return $request->send();
     }
 
     /**
-     * @param resource $ch
-     * @return mixed
+     * @param string $url
+     * @param null $body
+     * @param array $headers
+     *
+     * @return Response
      */
-    private function exec($ch)
+    public function delete($url, $body = null, array $headers = [])
     {
-        $output = curl_exec($ch);
-        curl_close($ch);
-        return $output;
-    }
+        $request = new Request($url, self::HTTP_DELETE, $body);
+        $request->mergeHeaders($headers);
 
-    /**
-     * Reset the response values.
-     */
-    public function reset()
-    {
-        $this->statusCode = null;
-        $this->headers = [];
-        $this->body = '';
+        return $request->send();
     }
 }

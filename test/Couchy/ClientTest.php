@@ -15,6 +15,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     private $curl;
 
+    /**
+     * @var Curl\Response|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $response;
+
     public function setUp()
     {
         $mock = $this->getMockBuilder('Couchy\Curl');
@@ -23,16 +28,25 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $this->client = new Client();
         $this->client->setCurlClient($this->curl);
+
+        $response = $this->getMockBuilder('Couchy\Curl\Response');
+        $response->disableOriginalConstructor();
+        $response->setMethods(['getBody', 'getJsonBody']);
+        $this->response = $response->getMock();
     }
 
     public function testGetServerInfoCallsBaseUrl()
     {
         $expectedUrl = 'http://127.0.0.1:5984';
 
+        $this->response->expects($this->once())
+            ->method('getJsonBody')
+            ->willReturn(new \stdClass());
+
         $this->curl->expects($this->once())
             ->method('get')
             ->with($expectedUrl)
-            ->willReturn(new \stdClass());
+            ->willReturn($this->response);
 
         $this->client->getServerInfo();
     }
@@ -41,16 +55,24 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $expectedUrl = 'http://127.0.0.1:5984/_all_dbs';
 
+        $this->response->expects($this->once())
+            ->method('getJsonBody')
+            ->willReturn(new \stdClass());
+
         $this->curl->expects($this->once())
             ->method('get')
             ->with($expectedUrl)
-            ->willReturn(new \stdClass());
+            ->willReturn($this->response);
 
         $this->client->listDatabases();
     }
 
     public function testCreateDatabaseIfNotExistsCallsListDatabases()
     {
+        $this->curl->expects($this->once())
+            ->method('put')
+            ->willReturn($this->response);
+
         /** @var Client|\PHPUnit_Framework_MockObject_MockObject $stub */
         $stub = $this->getMock('Couchy\Client', ['listDatabases']);
         $stub->expects($this->once())->method('listDatabases')->willReturn([]);

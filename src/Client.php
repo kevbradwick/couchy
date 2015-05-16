@@ -108,7 +108,7 @@ class Client
             $this->getBaseUrl()
         );
 
-        return new Server($response);
+        return new Server($response->getJsonBody());
     }
 
     /**
@@ -117,9 +117,9 @@ class Client
     public function listDatabases()
     {
         $url = $this->getBaseUrl() . '/_all_dbs';
-        $dbs = $this->getCurlClient()->get($url);
+        $response = $this->getCurlClient()->get($url);
 
-        return $dbs;
+        return $response->getJsonBody();
     }
 
     /**

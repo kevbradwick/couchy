@@ -54,7 +54,7 @@ class Database
     public function create()
     {
         $curl = $this->client->getCurlClient();
-        return $curl->put($this->getDatabaseUrl());
+        return $curl->put($this->getDatabaseUrl())->getJsonBody();
     }
 
     /**
@@ -68,7 +68,9 @@ class Database
     public function insert(array $data, $returnDocument = false)
     {
         $curl = $this->client->getCurlClient();
-        $output = $curl->post($this->getDatabaseUrl(), [], $data);
+        $response = $curl->post($this->getDatabaseUrl(), [], $data);
+        $output = $response->getJsonBody();
+
 
         if ($returnDocument === true) {
             return $this->getDocumentById($output->id);
@@ -82,13 +84,15 @@ class Database
 
     /**
      * @param string $id
+     *
+     * @return Document
      */
     public function getDocumentById($id)
     {
         $url = sprintf('%s/%s', $this->getDatabaseUrl(), $id);
-        $output = $this->client->getCurlClient()->get($url);
+        $response = $this->client->getCurlClient()->get($url);
 
-        return new Document($output);
+        return new Document($response->getJsonBody(), $this->client, $this);
     }
 
     /**

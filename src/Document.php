@@ -20,13 +20,27 @@ class Document
     private $document;
 
     /**
-     * @param \stdClass $document
+     * @var Client
      */
-    public function __construct(\stdClass $document)
+    private $client;
+
+    /**
+     * @var Database
+     */
+    private $database;
+
+    /**
+     * @param \stdClass $document
+     * @param Client $client
+     * @param Database $database
+     */
+    public function __construct(\stdClass $document, Client $client, Database $database)
     {
         $this->document = $document;
         $this->id = $document->_id;
         $this->rev = $document->_rev;
+        $this->client = $client;
+        $this->database = $database;
     }
 
     /**
@@ -56,5 +70,35 @@ class Document
         }
 
         return null;
+    }
+
+    /**
+     * Attach a file to this document.
+     *
+     * @param string $fileName the absolute path to a file on the file system
+     *
+     * @return mixed
+     */
+    public function saveAttachment($fileName)
+    {
+        if (!file_exists($fileName)) {
+            $message = sprintf('The attachment "%s" does not exist', $fileName);
+            throw new \InvalidArgumentException($message);
+        }
+
+        $cf = curl_file_create($fileName, mime_content_type($fileName), basename($fileName));
+        $url = $this->getDocumentUrl() . '/' . basename($fileName);
+        $params = ['rev' => $this->getRevision()];
+
+        $curl = $this->client->getCurlClient();
+        return $curl->put($url, $params, $cf)->getJsonBody();
+    }
+
+    /**
+     * @return string
+     */
+    public function getDocumentUrl()
+    {
+        return sprintf('%s/%s', $this->database->getDatabaseUrl(), $this->getId());
     }
 }
