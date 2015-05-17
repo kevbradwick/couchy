@@ -28,13 +28,21 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
     {
         $expectedUrl = 'http://127.0.0.1:5984/test';
 
-        $this->curl->expects($this->once())->method('put')->with($expectedUrl);
+        $mock = $this->getMockBuilder('Couchy\Curl\Response');
+        $mock->disableOriginalConstructor()
+             ->setMethods(['getJsonBody']);
+        $response = $mock->getMock();
+
+        $this->curl->expects($this->once())
+            ->method('put')
+            ->with($expectedUrl)
+            ->willReturn($response);
 
         $db = new Database('test', $this->client);
         $db->create();
     }
 
-    public function testExistsRetrnsFalse()
+    public function testExistsReturnsFalse()
     {
         $client = $this->getMock('Couchy\Client', ['listDatabases']);
         $client->expects($this->once())->method('listDatabases')->willReturn([]);
@@ -43,7 +51,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($database->exists());
     }
 
-    public function testExistsRetrnsTrue()
+    public function testExistsReturnsTrue()
     {
         $client = $this->getMock('Couchy\Client', ['listDatabases']);
         $client->expects($this->once())->method('listDatabases')->willReturn(['test']);
